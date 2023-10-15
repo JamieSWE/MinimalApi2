@@ -16,7 +16,7 @@ public class CouponRepository : ICouponRepository
     public async Task CreateAsync(Coupon coupon)
     {
         _db.Add(coupon);
-        //_db.SaveChanges();
+
     }
 
     public async Task<ICollection<Coupon>> GetAllAsync()
