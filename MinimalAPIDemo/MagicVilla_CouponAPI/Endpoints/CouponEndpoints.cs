@@ -3,6 +3,7 @@ using FluentValidation;
 using MagicVilla_CouponAPI.Models;
 using MagicVilla_CouponAPI.Models.DTOs;
 using MagicVilla_CouponAPI.Repository.IRepository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -14,10 +15,20 @@ public static class CouponEndpoints
     {
 
         app.MapGet("/api/coupon", GetAllCoupons).WithName("GetCoupons")
-        .Produces<APIResponse>(StatusCodes.Status200OK);
+        .Produces<APIResponse>(StatusCodes.Status200OK)
+        .RequireAuthorization("AdminOnly");
 
         app.MapGet("/api/coupon/{id:int}", GetCoupon).WithName("GetCoupon")
-        .Produces<APIResponse>(StatusCodes.Status200OK);
+        .Produces<APIResponse>(StatusCodes.Status200OK)
+        .AddEndpointFilter(async (context, next) =>
+        {
+            var id = context.GetArgument<int>(2);
+            if (id == 0)
+            {
+                return Results.BadRequest("Cannot have 0 in id");
+            }
+            return await next(context);
+        });
 
         app.MapPost("/api/coupon", CreateCoupon).WithName("CreateCoupons")
         .Accepts<CouponCreateDTO>("application/json")
@@ -35,6 +46,7 @@ public static class CouponEndpoints
 
     }
 
+    [Authorize]
     private async static Task<IResult> GetCoupon(ICouponRepository _couponRepo, int id)
     {
         APIResponse response = new();
@@ -43,6 +55,7 @@ public static class CouponEndpoints
         response.StatusCode = HttpStatusCode.OK;
         return Results.Ok(response);
     }
+    [Authorize]
     private async static Task<IResult> CreateCoupon(IMapper _mapper, IValidator<CouponCreateDTO> _validator,
             ICouponRepository _couponRepo, [FromBody] CouponCreateDTO couponCreateDto)
     {
@@ -77,6 +90,7 @@ public static class CouponEndpoints
         //return Results.CreatedAtRoute("GetCoupon", new { id = coupon.Id }, couponDTO);
         //return Results.Created($"/api/coupon/{coupon.Id}",coupon);
     }
+    [Authorize]
     private async static Task<IResult> UpdateCoupon(IMapper _mapper, IValidator<CouponUpdateDTO> _validator,
             ICouponRepository _couponRepo, [FromBody] CouponUpdateDTO couponUpdateDto)
     {
@@ -98,6 +112,7 @@ public static class CouponEndpoints
         response.StatusCode = HttpStatusCode.OK;
         return Results.Ok(response);
     }
+    [Authorize]
     private async static Task<IResult> DeleteCoupon(ICouponRepository _couponRepo, int id)
     {
         APIResponse response = new() { IsSuccess = false, StatusCode = HttpStatusCode.BadRequest };

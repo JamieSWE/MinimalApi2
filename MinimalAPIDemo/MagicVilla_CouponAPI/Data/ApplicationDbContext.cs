@@ -12,6 +12,7 @@ public class ApplicationDbContext : DbContext
     }
 
     public DbSet<Coupon> Coupons { get; set; }
+    public DbSet<LocalUser> LocalUsers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
